@@ -1,0 +1,35 @@
+#/usr/bin/python
+
+import sys
+import shutil
+import os
+
+DIR_PROCESSING = "processing"
+OUTPUT_PATH = "../"
+IMAGE_EXT = ".png"
+
+if __name__ == '__main__':
+    targetTileSize = 128 if len(sys.argv) < 2 else sys.argv[1]
+    tileSizeX = str(targetTileSize)
+    tileSizeY = str(targetTileSize/2)
+    
+    os.mkdir(DIR_PROCESSING)
+    
+    i = 0
+    
+    fd = open("../tileconfig")
+    terrainTypes = list(fd.readlines())
+    fd.close()
+    for terrainType in terrainTypes:
+        fileName = terrainType.strip()+IMAGE_EXT
+        shutil.copy(fileName, DIR_PROCESSING+"/"+str(i).zfill(1+(len(terrainTypes) / 10))+IMAGE_EXT)
+        i+=1
+        
+    os.chdir(DIR_PROCESSING)
+    
+    os.system("convert -alpha on -background '#00000000' -rotate 45 -scale '100x50%' -gravity center *.png out.png")
+    os.system("montage out*.png -background none -geometry '"+tileSizeX+"x"+tileSizeY+"' -depth 8 ../"+OUTPUT_PATH+"tileset.png")
+    
+    os.chdir("..")
+    
+    shutil.rmtree(DIR_PROCESSING)
